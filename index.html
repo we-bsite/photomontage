@@ -344,7 +344,7 @@
 
         for (const { imageData, palette } of imgs) {
           const components = palette
-            .filter((color) => color.area > 0.2)
+            .filter((color) => color.area > 0.3)
             .map((color) => [color.red, color.green, color.blue]);
 
           const totalComponentDistance = components.reduce(
@@ -355,7 +355,7 @@
 
           if (
             totalComponentDistance < threshold &&
-            getUses({ imageData }) < 500
+            getUses({ imageData }) < 150
           ) {
             usesCount.set(imageData, (usesCount.get(imageData) || 0) + 1);
             return imageData;
@@ -380,6 +380,9 @@
             (((767 - rmean) * b * b) >> 8)
         );
       }
+
+      // add an interval to re-fetch `urls` every 20 seconds
+      setInterval(() => document.location.reload(), 20000)
     </script>
   </body>
 </html>
