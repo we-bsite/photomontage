@@ -24,8 +24,9 @@
         top: 0;
         position: absolute;
         display: flex;
+        flex-direction: column;
         position: relative;
-        justify-content: center;
+        align-items: center;
         min-height: 800px;
         max-height: 80vh;
       }
@@ -51,6 +52,8 @@
 
       #images img {
         width: 50px;
+        aspect-ratio: 1/2;
+        object-fit: cover;
         height: auto;
       }
 
@@ -79,21 +82,22 @@
   </head>
 
   <body>
-    <h1>community lock screen collage</h1>
     <div id="content">
       <div style="width: 100%">
+        <h1>community lock screen collage</h1>
         <p>
-          <em>learn more on <a href="/about">/about</a></em>
+          <em>learn more on <a href="/about">kernel.we-b.site/about</a></em>
         </p>
         <p>submit your lock screen to participate :)</p>
         <img src="participate-qr.png" style="width: 200px" />
         <br />
         <br />
-        <h3 style="font-weight: normal"><em>homescreens</em></h3>
+        <h3 style="font-weight: normal"><em>lock screens</em></h3>
         <div id="images"></div>
       </div>
       <main>
         <div id="container">
+          <h3 style="font-weight: normal"><em>community data montage</em></h3>
           <canvas id="canvas"></canvas>
         </div>
       </main>
@@ -168,11 +172,14 @@
 
       // fetch images
       const urls = await fetch(
-        "https://opencoda.spencerc99.workers.dev/7SKkwgbs33/grid-sync-1054-Table-dynamic-c6a1a6339b5c3e93cc0da40839aca792c43e3dc8e94e8ec6db3d27085ff6c900"
-        // "https://opencoda.spencerc99.workers.dev/PX6lrM0MWO/grid-kMm5kBnA4b"
+        // "https://opencoda.spencerc99.workers.dev/7SKkwgbs33/grid-sync-1054-Table-dynamic-c6a1a6339b5c3e93cc0da40839aca792c43e3dc8e94e8ec6db3d27085ff6c900"
+        "https://opencoda.spencerc99.workers.dev/PX6lrM0MWO/grid-kMm5kBnA4b"
       )
         .then((response) => response.json())
-        .then((data) => data.map((row) => row.Url).filter((url) => !!url));
+        .then((data) =>
+          // data.map((row) => row.UrlNoCors).filter((url) => !!url)
+          data.map((row) => row.Url).filter((url) => !!url)
+        );
 
       for (const url of urls) {
         // create an image element for each url
@@ -196,27 +203,27 @@
 
       const imgs = await Promise.all(
         urls.map(async (url) => {
-          const imageData = await imageFromSrc(url);
+          const imageData = rescaleImageData(await imageFromSrc(url), 800);
           return {
             imageData,
             palette: await extractColors(imageData, {
-              distance: 0.1,
-              saturationDistance: 0.1,
-              lightnessDistance: 0.1,
-              hueDistance: 0.1,
+              pixels: imageData.width * imageData.height,
             }),
           };
         })
       );
 
+      console.log('done processing images')
+
       // actually construct the image
       // iterate squares of the cover image and find the closest image to put in the square
       const scales = [
-        [200, 200],
-        [100, 150],
-        [50, 80],
-        [25, 40],
+        [200, 80],
+        [100, 60],
+        [50, 40],
+        [25, 20],
       ];
+      const maxThreshold = scales[0][1];
       const aspectRatio = 1.33333333333;
       for (const [scale, threshold] of scales) {
         const xScale = Math.floor(scale);
@@ -261,9 +268,28 @@
               console.log('placing image at', x, y, 'with scale', scale)
               const rescaled = rescaleImageData(imageData, scale);
               ctx.putImageData(rescaled, x, y);
+
+              const playAudio = true;
+              if (playAudio) {
+                await new Promise((resolve) => setTimeout(resolve, 10 + Math.random() * 50));
+                const popSound = new Audio('pop.mp3');
+                try {
+                  await popSound.play();
+                } catch (e) {
+                }
+              }
             }
           }
         }
+
+        await new Promise((resolve) => setTimeout(resolve, 150 + Math.random() * 100));
+      }
+
+      function multiplyBlend(r1, r2) {
+        // return Math.min(((r1 * r2) / (255 * 2)) + (r1 * (ratio)) + (r2 * (1 - ratio)), 255);
+        return Math.min(((r1 * r2) / 255) + (r1 * 0.5), 255);
+        // return ((val1 * (ratio) + val2 * (1 - ratio)) * (val1 * val2)) / (255 * 255)
+        // return (r1 * r2) / (256 * 256) + (2 * r1 * (256 - r2)) / 256 + (r2 * (256 - (256 - r1) * (256 - r1) / (256 * 256) - r1)) / (256 * 256)
       }
 
       const oldData = new Uint8ClampedArray(ctx.getImageData(0, 0, width, height).data);
@@ -275,20 +301,25 @@
           oldData[i + 1] = 255;
           oldData[i + 2] = 255;
           oldData[i + 3] = 255;
+        } else {
+          oldData[i] = multiplyBlend(oldData[i], coverData.data[i]);
+          oldData[i + 1] = multiplyBlend(oldData[i + 1], coverData.data[i + 1]);
+          oldData[i + 2] = multiplyBlend(oldData[i + 2], coverData.data[i + 2]);
+          oldData[i + 3] = 255;
         }
       }
-      console.log(oldData)
       ctx.putImageData(new ImageData(oldData, width, height), 0, 0);
 
-      function findClosestImage(targetPixel, threshold = 100) {
+      function findClosestImage(targetPixel, threshold) {
         // sort imgs by least used
         const getUses = (img) => (usesCount.get(img.imageData) || 0) + (Math.random() - 0.5);
         imgs.sort((a, b) => getUses(a) - getUses(b));
 
         for (const { imageData, palette } of imgs) {
           const components = palette
-            .filter((color) => color.area > 0.3)
+            .filter((color) => color.area > 0.2)
             .map((color) => [color.red, color.green, color.blue]);
+
           const totalComponentDistance = components.reduce(
             (acc, component) =>
               Math.min(acc, colorDistance(targetPixel, component)),
@@ -299,6 +330,10 @@
             usesCount.set(imageData, (usesCount.get(imageData) || 0) + 1);
             return imageData;
           }
+        }
+
+        if (threshold >= maxThreshold) {
+          return findClosestImage(targetPixel, threshold * 1.2);
         }
 
         return null;
