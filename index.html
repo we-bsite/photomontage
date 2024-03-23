@@ -22,7 +22,9 @@
 
       #container {
         display: flex;
+        position: relative;
         justify-content: center;
+        min-height: 800px;
       }
 
       canvas {
@@ -56,6 +58,11 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 2em;
+        width: 100%;
+
+        @media screen and (max-width: 1000px) {
+          grid-template-columns: 1fr;
+        }
       }
 
       #content div {
@@ -153,7 +160,7 @@
 
       // fetch images
       const urls = await fetch(
-        "https://opencoda.spencerc99.workers.dev/7SKkwgbs33/grid-sync-1054-Table-dynamic-c6a1a6339b5c3e93cc0da40839aca792c43e3dc8e94e8ec6db3d27085ff6c900"
+        "https://opencoda.spencerc99.workers.dev/PX6lrM0MWO/grid-kMm5kBnA4b"
       )
         .then((response) => response.json())
         .then((data) => data.map((row) => row.Url).filter((url) => !!url));
