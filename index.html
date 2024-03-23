@@ -22,13 +22,14 @@
 
       #container {
         display: flex;
+        flex-direction: column;
         position: relative;
-        justify-content: center;
+        align-items: center;
         min-height: 800px;
       }
 
       canvas {
-        top: 0;
+        top: 1em;
         position: absolute;
         width: auto;
         height: 100%;
@@ -44,6 +45,8 @@
 
       #images img {
         width: 50px;
+        aspect-ratio: 1/2;
+        object-fit: cover;
         height: auto;
       }
 
@@ -76,17 +79,18 @@
     <div id="content">
       <div style="width: 100%">
         <p>
-          <em>learn more on <a href="/about">/about</a></em>
+          <em>learn more on <a href="/about">kernel.we-b.site/about</a></em>
         </p>
         <p>Submit your lock screen to participate</p>
         <img src="participate-qr.png" style="width: 200px" />
         <br />
         <br />
-        <h3 style="font-weight: normal"><em>homescreens</em></h3>
+        <h3 style="font-weight: normal"><em>lock screens</em></h3>
         <div id="images"></div>
       </div>
       <main>
         <div id="container">
+          <h3 style="font-weight: normal"><em>community data montage</em></h3>
           <canvas id="canvas"></canvas>
         </div>
       </main>
