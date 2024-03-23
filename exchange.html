@@ -56,7 +56,7 @@
       // prompt user to download the image
       download.href = image.Url;
       download.download = "lockscreen.png";
-      img.src = image.Url;
+      document.getElementById("img").src = image.Url;
       if (image.Name) {
         imgDes.innerHTML = "from " + image.Name + " " + imgDes.innerHTML;
       }
