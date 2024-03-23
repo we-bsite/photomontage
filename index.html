@@ -1,198 +1,288 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>community data jar - lock screen edition</title>
+    <link type="text/css" rel="stylesheet" href="base.css" />
+    <style>
+      body {
+        background: var(--primary-color);
+        max-width: none;
+        align-items: flex-start;
+      }
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>kernel 4 montage</title>
-  <style>
-    body {
-      margin: 0;
-    }
+      a {
+        color: var(--secondary-color);
+      }
 
-    #container {
-      display: flex;
-      justify-content: center;
-    }
+      #cover {
+        width: auto;
+      }
 
-    canvas {
-      position: absolute;
-      margin: 5vh 0;
-      width: auto;
-      height: 90vh;
-    }
-  </style>
-</head>
+      #container {
+        display: flex;
+        justify-content: center;
+      }
 
-<body>
-  <div id="container">
-    <canvas id="canvas"></canvas>
-  </div>
-  <script type="module">
-    import { extractColors } from 'https://cdn.jsdelivr.net/npm/extract-colors@4.0.2/+esm'
+      canvas {
+        top: 0;
+        position: absolute;
+        width: auto;
+        height: 100%;
+        max-height: 90vh;
+        margin-top: 4vh;
+      }
 
-    // cover
-    const cover = document.getElementById("cover")
-    // const width = parseInt(cover.width);
-    // const height = parseInt(cover.height);
-    const coverData = await imageFromSrc("https://www.kernelmag.io/_next/image?url=%2Fissue-images%2F4%2Fcover.jpg&w=3840&q=100");
-    const width = coverData.width;
-    const height = coverData.height;
+      #images {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0;
+      }
 
-    // remap canvas
-    const canvas = document.getElementById('canvas');
-    canvas.height = height;
-    canvas.width = width;
-    const ctx = canvas.getContext('2d');
+      #images img {
+        width: 50px;
+        height: auto;
+      }
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.putImageData(coverData, 0, 0);
+      main {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2em;
+        justify-content: center;
+      }
 
-    function getImageData(image) {
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = image.width;
-      tempCanvas.height = image.height;
-      const tempCtx = tempCanvas.getContext('2d');
-      tempCtx.drawImage(image, 0, 0);
-      return tempCtx.getImageData(0, 0, image.width, image.height);
-    }
+      #content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2em;
+      }
 
-    function rescaleImageData(imageData) {
-      const { width, height, data } = imageData;
-      
-      const scale = Math.min(imageData.width, 50) / imageData.width;
-      const newWidth = Math.floor(width * scale);
-      const newHeight = Math.floor(height * scale);
-      const newData = new Uint8ClampedArray(newWidth * newHeight * 4);
+      #content div {
+        align-items: center;
+      }
+    </style>
+  </head>
 
-      const ratioX = width / newWidth;
-      const ratioY = height / newHeight;
+  <body>
+    <h1>community data jar - lock screen edition</h1>
+    <div id="content">
+      <div style="width: 100%">
+        <p>
+          <em>learn more on <a href="/about">/about</a></em>
+        </p>
+        <p>Submit your lock screen to participate</p>
+        <img src="participate-qr.png" style="width: 200px" />
+        <br />
+        <br />
+        <h3 style="font-weight: normal"><em>homescreens</em></h3>
+        <div id="images"></div>
+      </div>
+      <main>
+        <div id="container">
+          <canvas id="canvas"></canvas>
+        </div>
+      </main>
+    </div>
+    <footer>
+      an experience by <a href="https://jzhao.xyz">jacky</a> and
+      <a href="https://spencerchang.me">spencer</a> for
+      <a href="https://kernelmag.io">Kernel Magazine's</a> 4th issue launch (<a
+        href="https://github.com/we-bsite/photomontage"
+        >code</a
+      >)
+    </footer>
+    <script type="module">
+      import { extractColors } from "https://cdn.jsdelivr.net/npm/extract-colors@4.0.2/+esm";
 
-      for (let y = 0; y < newHeight; y++) {
-        for (let x = 0; x < newWidth; x++) {
-          const srcX = Math.floor(x * ratioX);
-          const srcY = Math.floor(y * ratioY);
-          const srcOffset = (srcY * width + srcX) * 4;
-          const destOffset = (y * newWidth + x) * 4;
+      // cover
+      const cover = document.getElementById("cover");
+      // const width = parseInt(cover.width);
+      // const height = parseInt(cover.height);
+      const coverData = await imageFromSrc(
+        "https://www.kernelmag.io/_next/image?url=%2Fissue-images%2F4%2Fcover.jpg&w=3840&q=100"
+      );
+      const width = coverData.width;
+      const height = coverData.height;
 
-          newData[destOffset] = data[srcOffset];
-          newData[destOffset + 1] = data[srcOffset + 1];
-          newData[destOffset + 2] = data[srcOffset + 2];
-          newData[destOffset + 3] = data[srcOffset + 3];
+      // remap canvas
+      const canvas = document.getElementById("canvas");
+      canvas.height = height;
+      canvas.width = width;
+      const ctx = canvas.getContext("2d");
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.putImageData(coverData, 0, 0);
+
+      function getImageData(image) {
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = image.width;
+        tempCanvas.height = image.height;
+        const tempCtx = tempCanvas.getContext("2d");
+        tempCtx.drawImage(image, 0, 0);
+        return tempCtx.getImageData(0, 0, image.width, image.height);
+      }
+
+      function rescaleImageData(imageData) {
+        const { width, height, data } = imageData;
+
+        const scale = Math.min(imageData.width, 50) / imageData.width;
+        const newWidth = Math.floor(width * scale);
+        const newHeight = Math.floor(height * scale);
+        const newData = new Uint8ClampedArray(newWidth * newHeight * 4);
+
+        const ratioX = width / newWidth;
+        const ratioY = height / newHeight;
+
+        for (let y = 0; y < newHeight; y++) {
+          for (let x = 0; x < newWidth; x++) {
+            const srcX = Math.floor(x * ratioX);
+            const srcY = Math.floor(y * ratioY);
+            const srcOffset = (srcY * width + srcX) * 4;
+            const destOffset = (y * newWidth + x) * 4;
+
+            newData[destOffset] = data[srcOffset];
+            newData[destOffset + 1] = data[srcOffset + 1];
+            newData[destOffset + 2] = data[srcOffset + 2];
+            newData[destOffset + 3] = data[srcOffset + 3];
+          }
         }
+
+        return new ImageData(newData, newWidth, newHeight);
       }
 
-      return new ImageData(newData, newWidth, newHeight);
-    }
+      // fetch images
+      const urls = await fetch(
+        "https://opencoda.spencerc99.workers.dev/7SKkwgbs33/grid-sync-1054-Table-dynamic-c6a1a6339b5c3e93cc0da40839aca792c43e3dc8e94e8ec6db3d27085ff6c900"
+      )
+        .then((response) => response.json())
+        .then((data) => data.map((row) => row.Url).filter((url) => !!url));
 
-    // fetch images
-    const urls = await fetch("https://opencoda.spencerc99.workers.dev/7SKkwgbs33/grid-sync-1054-Table-dynamic-c6a1a6339b5c3e93cc0da40839aca792c43e3dc8e94e8ec6db3d27085ff6c900")
-      .then(response => response.json())
-      .then(data => data
-        .map(row => row.Url)
-        .filter(url => !!url));
-
-    for (const url of urls) {
-      // create an image element for each url
-      const img = document.createElement('img');
-      img.src = url;
-      document.body.appendChild(img);
-      img.style.width = '200px';
-      img.style.height = 'auto';
-    }
-
-    async function imageFromSrc(url) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => {
-          resolve(getImageData(img))
-        };
-
-        img.crossOrigin = "Anonymous";
-        img.onerror = reject;
+      for (const url of urls) {
+        // create an image element for each url
+        const img = document.createElement("img");
         img.src = url;
-      })
-    }
-
-    const imgs = await Promise.all(urls.map(async url => {
-      const imageData = await imageFromSrc(url);
-      return {
-        imageData,
-        palette: await extractColors(imageData, {
-          distance: 0.1,
-          saturationDistance: 0.1,
-          lightnessDistance: 0.1,
-          hueDistance: 0.1,
-        }),
+        images.appendChild(img);
       }
-    }))
 
-    // actually construct the image
-    // iterate squares of the cover image and find the closest image to put in the square
-    const scales = [[320, 300], [160, 200], [80, 150], [40, 80], [20, 40]]
-    for (const [scale, threshold] of scales) {
-      for (let x = 0; x < width; x += scale) {
-        for (let y = 0; y < height; y += scale) {
-          const samplePixels = [];
-          for (let sampleX = -1; sampleX <= 1; sampleX++) {
-            for (let sampleY = -1; sampleY <= 1; sampleY++) {
-              const sampleIndex = ((y + sampleY) * width + (x + sampleX)) * 4;
-              if (sampleIndex >= 0 && sampleIndex < coverData.data.length - 3) { // Ensure we don't sample out of bounds
-                samplePixels.push([
-                  coverData.data[sampleIndex],
-                  coverData.data[sampleIndex + 1],
-                  coverData.data[sampleIndex + 2]
-                ]);
+      async function imageFromSrc(url) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            resolve(getImageData(img));
+          };
+
+          img.crossOrigin = "Anonymous";
+          img.onerror = reject;
+          img.src = url;
+        });
+      }
+
+      const imgs = await Promise.all(
+        urls.map(async (url) => {
+          const imageData = await imageFromSrc(url);
+          return {
+            imageData,
+            palette: await extractColors(imageData, {
+              distance: 0.1,
+              saturationDistance: 0.1,
+              lightnessDistance: 0.1,
+              hueDistance: 0.1,
+            }),
+          };
+        })
+      );
+
+      // actually construct the image
+      // iterate squares of the cover image and find the closest image to put in the square
+      const scales = [
+        [320, 300],
+        [160, 200],
+        [80, 150],
+        [40, 80],
+        [20, 40],
+      ];
+      for (const [scale, threshold] of scales) {
+        for (let x = 0; x < width; x += scale) {
+          for (let y = 0; y < height; y += scale) {
+            const samplePixels = [];
+            for (let sampleX = -1; sampleX <= 1; sampleX++) {
+              for (let sampleY = -1; sampleY <= 1; sampleY++) {
+                const sampleIndex = ((y + sampleY) * width + (x + sampleX)) * 4;
+                if (
+                  sampleIndex >= 0 &&
+                  sampleIndex < coverData.data.length - 3
+                ) {
+                  // Ensure we don't sample out of bounds
+                  samplePixels.push([
+                    coverData.data[sampleIndex],
+                    coverData.data[sampleIndex + 1],
+                    coverData.data[sampleIndex + 2],
+                  ]);
+                }
               }
             }
-          }
 
-          const targetPixel = samplePixels.reduce((acc, curr) => {
-            acc[0] += curr[0];
-            acc[1] += curr[1];
-            acc[2] += curr[2];
-            return acc;
-          }, [0, 0, 0]).map(value => value / samplePixels.length);
+            const targetPixel = samplePixels
+              .reduce(
+                (acc, curr) => {
+                  acc[0] += curr[0];
+                  acc[1] += curr[1];
+                  acc[2] += curr[2];
+                  return acc;
+                },
+                [0, 0, 0]
+              )
+              .map((value) => value / samplePixels.length);
 
-          const imageData = findClosestImage(targetPixel, threshold);
-          if (imageData) {
-            const rescaled = rescaleImageData(imageData)
-            ctx.putImageData(rescaled, x, y);
+            const imageData = findClosestImage(targetPixel, threshold);
+            if (imageData) {
+              const rescaled = rescaleImageData(imageData);
+              ctx.putImageData(rescaled, x, y);
+            }
           }
         }
       }
-    }
 
-    // manipulate coverData to adjust the opacity to 0.5 (every 4th value)
-    const bitmap = await createImageBitmap(coverData)
-    ctx.globalAlpha = 0.3;
-    ctx.drawImage(bitmap, 0, 0);
+      // manipulate coverData to adjust the opacity to 0.5 (every 4th value)
+      const bitmap = await createImageBitmap(coverData);
+      ctx.globalAlpha = 0.3;
+      ctx.drawImage(bitmap, 0, 0);
 
-    function findClosestImage(targetPixel, threshold = 100) {
-      let closestImage = null;
-      
-      // shuffle the images so we don't always pick the same one
-      imgs.sort(() => Math.random() - 0.5);
-      for (const {imageData, palette} of imgs) {
-        const components = palette.filter(color => color.area > 0.3).map(color => [color.red, color.green, color.blue])
-        const totalComponentDistance = components.reduce((acc, component) => Math.min(acc, colorDistance(targetPixel, component)), 1e10);
+      function findClosestImage(targetPixel, threshold = 100) {
+        let closestImage = null;
 
-        if (totalComponentDistance < threshold) {
-          return imageData;
+        // shuffle the images so we don't always pick the same one
+        imgs.sort(() => Math.random() - 0.5);
+        for (const { imageData, palette } of imgs) {
+          const components = palette
+            .filter((color) => color.area > 0.3)
+            .map((color) => [color.red, color.green, color.blue]);
+          const totalComponentDistance = components.reduce(
+            (acc, component) =>
+              Math.min(acc, colorDistance(targetPixel, component)),
+            1e10
+          );
+
+          if (totalComponentDistance < threshold) {
+            return imageData;
+          }
         }
+
+        return closestImage;
       }
 
-      return closestImage;
-    }
-
-    function colorDistance(color1, color2) {
-      const rmean = (color1[0] + color2[0]) / 512;
-      const r = color1[0] - color2[0];
-      const g = color1[1] - color2[1];
-      const b = color1[2] - color2[2];
-      return Math.sqrt((((512 + rmean) * r * r) >> 8) + 4 * g * g + (((767 - rmean) * b * b) >> 8));
-    }
-  </script>
-</body>
-
+      function colorDistance(color1, color2) {
+        const rmean = (color1[0] + color2[0]) / 512;
+        const r = color1[0] - color2[0];
+        const g = color1[1] - color2[1];
+        const b = color1[2] - color2[2];
+        return Math.sqrt(
+          (((512 + rmean) * r * r) >> 8) +
+            4 * g * g +
+            (((767 - rmean) * b * b) >> 8)
+        );
+      }
+    </script>
+  </body>
 </html>
