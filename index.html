@@ -163,7 +163,9 @@
         "https://opencoda.spencerc99.workers.dev/PX6lrM0MWO/grid-kMm5kBnA4b"
       )
         .then((response) => response.json())
-        .then((data) => data.map((row) => row.Url).filter((url) => !!url));
+        .then((data) =>
+          data.map((row) => row.UrlNoCors).filter((url) => !!url)
+        );
 
       for (const url of urls) {
         // create an image element for each url
