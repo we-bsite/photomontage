@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lock Screen Exchange</title>
+    <link type="text/css" rel="stylesheet" href="base.css" />
+  </head>
+
+  <body>
+    <div>
+      <h1>community data jar: lock screen exchange</h1>
+      <p style="font-style: italic; font-size: 0.8em">
+        your download should begin shortly...
+      </p>
+      <div class="imgContainer">
+        <img src="tui-and-la.gif" id="img" />
+        <p id="imgDes"><a id="download">(click to download)</a></p>
+      </div>
+      <p>
+        Once you have the image, try setting it as your background for today.
+      </p>
+      <p>
+        Imagine what kind of person cherishes this lock screen and see if you
+        meet them here today.
+      </p>
+      <p style="font-style: italic">
+        What's the story behind it? How long have they had it? What do they want
+        to hold onto with it?
+      </p>
+    </div>
+
+    <footer>
+      an experience by <a href="https://jzhao.xyz">jacky</a> and
+      <a href="https://spencerchang.me">spencer</a> for
+      <a href="https://kernelmag.io">Kernel Magazine's</a> 4th issue launch (<a
+        href="https://github.com/we-bsite/photomontage"
+        >code</a
+      >)
+    </footer>
+    <script type="module">
+      function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+      }
+
+      const resp = await fetch(
+        "https://opencoda.spencerc99.workers.dev/PX6lrM0MWO/grid-kMm5kBnA4b"
+      );
+      const data = await resp.json();
+      const items = shuffleArray(data);
+      const image = items.find((item) => Boolean(item.Url));
+      // prompt user to download the image
+      download.href = image.Url;
+      download.download = "lockscreen.png";
+      img.src = image.Url;
+      if (image.Name) {
+        imgDes.innerHTML = "from " + image.Name + " " + imgDes.innerHTML;
+      }
+      download.click();
+    </script>
+  </body>
+</html>

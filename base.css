@@ -1,0 +1,42 @@
+body {
+  font-family: "Times New Roman", Times, serif;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  max-width: 600px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  color: white;
+  background: rgb(27 53 107);
+  font-size: 20px;
+  padding: 0 1em;
+  padding-bottom: 2em;
+}
+
+a {
+  color: rgb(230 86 60);
+}
+
+.imgContainer {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.imgContainer p {
+  font-style: italic;
+  font-size: 0.8em;
+}
+
+#img {
+  max-width: 360px;
+  max-height: 400px;
+}
+h1 {
+  margin-bottom: 0em;
+}
+
+footer {
+  margin-top: 3em;
+  text-align: center;
+}

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>community data jar: lock screen exchange</title>
+    <link type="text/css" rel="stylesheet" href="base.css" />
+  </head>
+  <body>
+    <div>
+      <h1>community data jar: lock screen exchange</h1>
+      <!-- <div class="imgContainer">
+        <img src="tui-and-la.gif" id="img" />
+        <p id="imgDes"><a id="download">(click to download)</a></p>
+      </div> -->
+      <p>
+        "community data jar" is an exercise in uncovering and experiencing
+        someone else's daily digital experience.
+      </p>
+      <p>
+        For "lock screen exchange," participants submit a picture of their lock
+        screen and receive a random lock screen from another participant to set
+        as their own for the rest of the day. This act invites experiencing
+        someone else's normally hidden digital environment as your reality.
+      </p>
+      <p>
+        The collection of lock screen photos were then transformed into a
+        collective mural, forming Kernel Magazine's 4th Issue for the launch
+        event.
+      </p>
+      <!-- TODO: INSERT LIVE COLLETIVE MURAL -->
+    </div>
+
+    <footer>
+      an experience by <a href="https://jzhao.xyz">jacky</a> and
+      <a href="https://spencerchang.me">spencer</a> for
+      <a href="https://kernelmag.io">Kernel Magazine's</a> 4th issue launch (<a
+        href="https://github.com/we-bsite/photomontage"
+        >code</a
+      >)
+    </footer>
+    <script type="module">
+      function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+      }
+
+      const resp = await fetch(
+        "https://opencoda.spencerc99.workers.dev/PX6lrM0MWO/grid-kMm5kBnA4b"
+      );
+      const data = await resp.json();
+      const items = shuffleArray(data);
+    </script>
+  </body>
+</html>
