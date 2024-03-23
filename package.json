@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "proxy": "lcp --proxyUrl https://codahosted.io --port 8010"
+  },
+  "dependencies": {
+    "lcp": "^1.1.0"
+  }
+}

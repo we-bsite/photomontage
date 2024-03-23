@@ -178,7 +178,16 @@
         .then((response) => response.json())
         .then((data) =>
           // data.map((row) => row.UrlNoCors).filter((url) => !!url)
-          data.map((row) => row.Url).filter((url) => !!url)
+          data
+            .map((row) => row.Url)
+            .filter((url) => !!url)
+            .map(url => {
+              const parsed = new URL(url);
+
+              const rewritten = `http://localhost:8010/proxy${parsed.pathname}`
+              console.log(rewritten)
+              return rewritten
+            })
         );
 
       for (const url of urls) {
