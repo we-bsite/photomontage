@@ -34,7 +34,7 @@
     <canvas id="canvas"></canvas>
   </div>
   <script type="module">
-    import {extractColors} from 'https://cdn.jsdelivr.net/npm/extract-colors@4.0.2/+esm'
+    import { extractColors } from 'https://cdn.jsdelivr.net/npm/extract-colors@4.0.2/+esm'
 
     function getImageData(image) {
       const tempCanvas = document.createElement('canvas');
@@ -46,18 +46,31 @@
     }
 
     function rescaleImageData(imageData) {
-      const tempCanvas = document.createElement('canvas');
-      const tempCtx = tempCanvas.getContext('2d');
-
+      const { width, height, data } = imageData;
+      
       const scale = Math.min(imageData.width, 50) / imageData.width;
-      tempCanvas.width = imageData.width * scale;
-      tempCanvas.height = imageData.height * scale;
+      const newWidth = Math.floor(width * scale);
+      const newHeight = Math.floor(height * scale);
+      const newData = new Uint8ClampedArray(newWidth * newHeight * 4);
 
-      tempCtx.putImageData(imageData, 0, 0);
-      tempCtx.scale(scale, scale);
-      tempCtx.drawImage(tempCanvas, 0, 0);
+      const ratioX = width / newWidth;
+      const ratioY = height / newHeight;
 
-      return tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+      for (let y = 0; y < newHeight; y++) {
+        for (let x = 0; x < newWidth; x++) {
+          const srcX = Math.floor(x * ratioX);
+          const srcY = Math.floor(y * ratioY);
+          const srcOffset = (srcY * width + srcX) * 4;
+          const destOffset = (y * newWidth + x) * 4;
+
+          newData[destOffset] = data[srcOffset];
+          newData[destOffset + 1] = data[srcOffset + 1];
+          newData[destOffset + 2] = data[srcOffset + 2];
+          newData[destOffset + 3] = data[srcOffset + 3];
+        }
+      }
+
+      return new ImageData(newData, newWidth, newHeight);
     }
 
     // fetch images
@@ -66,6 +79,15 @@
       .then(data => data
         .map(row => row.Url)
         .filter(url => !!url));
+
+    for (const url of urls) {
+      // create an image element for each url
+      const img = document.createElement('img');
+      img.src = url;
+      document.body.appendChild(img);
+      img.style.width = '200px';
+      img.style.height = 'auto';
+    }
 
     async function imageFromSrc(url) {
       return new Promise((resolve, reject) => {
@@ -90,13 +112,14 @@
 
     // cover
     const cover = document.getElementById("cover")
+    const width = parseInt(cover.width);
+    const height = parseInt(cover.height);
     const coverData = await imageFromSrc("https://www.kernelmag.io/_next/image?url=%2Fissue-images%2F4%2Fcover.jpg&w=3840&q=100");
-    console.log(imgs, coverData)
+    console.log(width, height, coverData)
 
     // remap canvas
     const canvas = document.getElementById('canvas');
-    const width = parseInt(cover.width);
-    const height = parseInt(cover.height);
+
     canvas.height = height;
     canvas.width = width;
     const ctx = canvas.getContext('2d');
@@ -109,6 +132,7 @@
     const rand = () => 50;
     for (let x = 0; x < width; x += rand()) {
       for (let y = 0; y < height; y += rand()) {
+        // TODO: this should sample instead of just taking a single pixel
         const targetPixel = [
           coverData.data[(y * width + x) * 4],
           coverData.data[(y * width + x) * 4 + 1],
@@ -118,23 +142,20 @@
         const imageData = findClosestImage(targetPixel);
         if (imageData) {
           const rescaled = rescaleImageData(imageData)
-          console.log(rescaled)
           ctx.putImageData(rescaled, x, y);
-        } 
+        }
       }
     }
 
-    ctx.globalAlpha = 0.5;
-    ctx.drawImage(cover, 0, 0);
-
     function findClosestImage(targetPixel) {
       let closestImage = null;
-      let minDistance = Infinity;
+      let minDistance = 150;
 
       for (const {imageData, palette} of imgs) {
         const components = palette.filter(color => color.area > 0.4).map(color => [color.red, color.green, color.blue])
         const totalComponentDistance = components.reduce((acc, component) => acc + colorDistance(targetPixel, component), 0);
 
+        console.log(totalComponentDistance)
         if (totalComponentDistance < minDistance) {
           minDistance = totalComponentDistance;
           closestImage = imageData;
