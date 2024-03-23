@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "proxy": "lcp --proxyUrl https://codahosted.io --port 8010"
+    "proxy": "lcp --proxyUrl https://codahosted.io --port 8010",
+    "start": "npm run proxy & open -a \"Google Chrome\" index.html"
   },
   "dependencies": {
     "lcp": "^1.1.0"
