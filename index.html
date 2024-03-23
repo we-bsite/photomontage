@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>community data jar - lock screen edition</title>
+    <title>community lock screen collage</title>
     <link type="text/css" rel="stylesheet" href="base.css" />
     <style>
       body {
@@ -21,19 +21,26 @@
       }
 
       #container {
+        top: 0;
+        position: absolute;
         display: flex;
         position: relative;
         justify-content: center;
         min-height: 800px;
+        max-height: 80vh;
+      }
+
+      #container > img {
+        position: absolute;
+        width: 100%;
+        height: 100%;
       }
 
       canvas {
-        top: 0;
-        position: absolute;
-        width: auto;
-        height: 100%;
-        max-height: 90vh;
-        margin-top: 4vh;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        box-shadow: 5px 5px 41px 11px rgba(0, 0, 0, 0.4);
       }
 
       #images {
@@ -72,13 +79,13 @@
   </head>
 
   <body>
-    <h1>community data jar - lock screen edition</h1>
+    <h1>community lock screen collage</h1>
     <div id="content">
       <div style="width: 100%">
         <p>
           <em>learn more on <a href="/about">/about</a></em>
         </p>
-        <p>Submit your lock screen to participate</p>
+        <p>submit your lock screen to participate :)</p>
         <img src="participate-qr.png" style="width: 200px" />
         <br />
         <br />
@@ -118,6 +125,7 @@
       canvas.width = width;
       const ctx = canvas.getContext("2d");
 
+      const usesCount = new Map();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.putImageData(coverData, 0, 0);
 
@@ -130,10 +138,10 @@
         return tempCtx.getImageData(0, 0, image.width, image.height);
       }
 
-      function rescaleImageData(imageData) {
+      function rescaleImageData(imageData, maxWidth = 50) {
         const { width, height, data } = imageData;
 
-        const scale = Math.min(imageData.width, 50) / imageData.width;
+        const scale = Math.min(imageData.width, maxWidth) / imageData.width;
         const newWidth = Math.floor(width * scale);
         const newHeight = Math.floor(height * scale);
         const newData = new Uint8ClampedArray(newWidth * newHeight * 4);
@@ -160,7 +168,8 @@
 
       // fetch images
       const urls = await fetch(
-        "https://opencoda.spencerc99.workers.dev/PX6lrM0MWO/grid-kMm5kBnA4b"
+        "https://opencoda.spencerc99.workers.dev/7SKkwgbs33/grid-sync-1054-Table-dynamic-c6a1a6339b5c3e93cc0da40839aca792c43e3dc8e94e8ec6db3d27085ff6c900"
+        // "https://opencoda.spencerc99.workers.dev/PX6lrM0MWO/grid-kMm5kBnA4b"
       )
         .then((response) => response.json())
         .then((data) => data.map((row) => row.Url).filter((url) => !!url));
@@ -179,7 +188,7 @@
             resolve(getImageData(img));
           };
 
-          img.crossOrigin = "Anonymous";
+          img.crossOrigin = "anonymous";
           img.onerror = reject;
           img.src = url;
         });
@@ -203,18 +212,22 @@
       // actually construct the image
       // iterate squares of the cover image and find the closest image to put in the square
       const scales = [
-        [320, 300],
-        [160, 200],
-        [80, 150],
-        [40, 80],
-        [20, 40],
+        [200, 200],
+        [100, 150],
+        [50, 80],
+        [25, 40],
       ];
+      const aspectRatio = 1.33333333333;
       for (const [scale, threshold] of scales) {
-        for (let x = 0; x < width; x += scale) {
-          for (let y = 0; y < height; y += scale) {
+        const xScale = Math.floor(scale);
+        const yScale = Math.floor(scale * aspectRatio);
+        for (let x = 0; x < width; x += xScale) {
+          for (let y = 0; y < height; y += yScale) {
             const samplePixels = [];
-            for (let sampleX = -1; sampleX <= 1; sampleX++) {
-              for (let sampleY = -1; sampleY <= 1; sampleY++) {
+            const xWindow = Math.floor(xScale / 2);
+            const yWindow = Math.floor(yScale / 2);
+            for (let sampleX = -xWindow; sampleX <= xWindow; sampleX++) {
+              for (let sampleY = -yWindow; sampleY <= yWindow; sampleY++) {
                 const sampleIndex = ((y + sampleY) * width + (x + sampleX)) * 4;
                 if (
                   sampleIndex >= 0 &&
@@ -230,6 +243,7 @@
               }
             }
 
+            // average samples
             const targetPixel = samplePixels
               .reduce(
                 (acc, curr) => {
@@ -244,23 +258,33 @@
 
             const imageData = findClosestImage(targetPixel, threshold);
             if (imageData) {
-              const rescaled = rescaleImageData(imageData);
+              console.log('placing image at', x, y, 'with scale', scale)
+              const rescaled = rescaleImageData(imageData, scale);
               ctx.putImageData(rescaled, x, y);
             }
           }
         }
       }
 
-      // manipulate coverData to adjust the opacity to 0.5 (every 4th value)
-      const bitmap = await createImageBitmap(coverData);
-      ctx.globalAlpha = 0.3;
-      ctx.drawImage(bitmap, 0, 0);
+      const oldData = new Uint8ClampedArray(ctx.getImageData(0, 0, width, height).data);
+      const whiteLevel = 230;
+      for (let i = 0; i < coverData.data.length; i += 4) {
+        const isWhite = coverData.data[i] > whiteLevel && coverData.data[i + 1] > whiteLevel && coverData.data[i + 2] > whiteLevel;
+        if (isWhite) {
+          oldData[i] = 255;
+          oldData[i + 1] = 255;
+          oldData[i + 2] = 255;
+          oldData[i + 3] = 255;
+        }
+      }
+      console.log(oldData)
+      ctx.putImageData(new ImageData(oldData, width, height), 0, 0);
 
       function findClosestImage(targetPixel, threshold = 100) {
-        let closestImage = null;
+        // sort imgs by least used
+        const getUses = (img) => (usesCount.get(img.imageData) || 0) + (Math.random() - 0.5);
+        imgs.sort((a, b) => getUses(a) - getUses(b));
 
-        // shuffle the images so we don't always pick the same one
-        imgs.sort(() => Math.random() - 0.5);
         for (const { imageData, palette } of imgs) {
           const components = palette
             .filter((color) => color.area > 0.3)
@@ -271,12 +295,13 @@
             1e10
           );
 
-          if (totalComponentDistance < threshold) {
+          if (totalComponentDistance < threshold && (getUses({ imageData }) < 500)) {
+            usesCount.set(imageData, (usesCount.get(imageData) || 0) + 1);
             return imageData;
           }
         }
 
-        return closestImage;
+        return null;
       }
 
       function colorDistance(color1, color2) {
