@@ -88,8 +88,17 @@
         <p>
           <em>learn more on <a href="/about">kernel.we-b.site/about</a></em>
         </p>
-        <p>submit your lock screen to participate :)</p>
-        <img src="participate-qr.png" style="width: 200px" />
+        <p>follow the qr codes to participate</p>
+        <div style="display: flex; gap: 3em">
+          <div>
+            <img src="participate-qr.png" style="width: 200px" />
+            <p>1) participate</p>
+          </div>
+          <div>
+            <img src="exchange-qr.png" style="width: 200px" />
+            <p>2) exchange</p>
+          </div>
+        </div>
         <br />
         <br />
         <h3 style="font-weight: normal"><em>lock screens</em></h3>
@@ -181,12 +190,12 @@
           data
             .map((row) => row.Url)
             .filter((url) => !!url)
-            .map(url => {
+            .map((url) => {
               const parsed = new URL(url);
 
-              const rewritten = `http://localhost:8010/proxy${parsed.pathname}`
-              console.log(rewritten)
-              return rewritten
+              const rewritten = `http://localhost:8010/proxy${parsed.pathname}`;
+              console.log(rewritten);
+              return rewritten;
             })
         );
 
@@ -222,7 +231,7 @@
         })
       );
 
-      console.log('done processing images')
+      console.log("done processing images");
 
       // actually construct the image
       // iterate squares of the cover image and find the closest image to put in the square
@@ -274,37 +283,45 @@
 
             const imageData = findClosestImage(targetPixel, threshold);
             if (imageData) {
-              console.log('placing image at', x, y, 'with scale', scale)
+              console.log("placing image at", x, y, "with scale", scale);
               const rescaled = rescaleImageData(imageData, scale);
               ctx.putImageData(rescaled, x, y);
 
               const playAudio = true;
               if (playAudio) {
-                await new Promise((resolve) => setTimeout(resolve, 10 + Math.random() * 50));
-                const popSound = new Audio('pop.mp3');
+                await new Promise((resolve) =>
+                  setTimeout(resolve, 10 + Math.random() * 50)
+                );
+                const popSound = new Audio("pop.mp3");
                 try {
                   await popSound.play();
-                } catch (e) {
-                }
+                } catch (e) {}
               }
             }
           }
         }
 
-        await new Promise((resolve) => setTimeout(resolve, 150 + Math.random() * 100));
+        await new Promise((resolve) =>
+          setTimeout(resolve, 150 + Math.random() * 100)
+        );
       }
 
       function multiplyBlend(r1, r2) {
         // return Math.min(((r1 * r2) / (255 * 2)) + (r1 * (ratio)) + (r2 * (1 - ratio)), 255);
-        return Math.min(((r1 * r2) / 255) + (r1 * 0.5), 255);
+        return Math.min((r1 * r2) / 255 + r1 * 0.5, 255);
         // return ((val1 * (ratio) + val2 * (1 - ratio)) * (val1 * val2)) / (255 * 255)
         // return (r1 * r2) / (256 * 256) + (2 * r1 * (256 - r2)) / 256 + (r2 * (256 - (256 - r1) * (256 - r1) / (256 * 256) - r1)) / (256 * 256)
       }
 
-      const oldData = new Uint8ClampedArray(ctx.getImageData(0, 0, width, height).data);
+      const oldData = new Uint8ClampedArray(
+        ctx.getImageData(0, 0, width, height).data
+      );
       const whiteLevel = 230;
       for (let i = 0; i < coverData.data.length; i += 4) {
-        const isWhite = coverData.data[i] > whiteLevel && coverData.data[i + 1] > whiteLevel && coverData.data[i + 2] > whiteLevel;
+        const isWhite =
+          coverData.data[i] > whiteLevel &&
+          coverData.data[i + 1] > whiteLevel &&
+          coverData.data[i + 2] > whiteLevel;
         if (isWhite) {
           oldData[i] = 255;
           oldData[i + 1] = 255;
@@ -321,7 +338,8 @@
 
       function findClosestImage(targetPixel, threshold) {
         // sort imgs by least used
-        const getUses = (img) => (usesCount.get(img.imageData) || 0) + (Math.random() - 0.5);
+        const getUses = (img) =>
+          (usesCount.get(img.imageData) || 0) + (Math.random() - 0.5);
         imgs.sort((a, b) => getUses(a) - getUses(b));
 
         for (const { imageData, palette } of imgs) {
@@ -335,7 +353,10 @@
             1e10
           );
 
-          if (totalComponentDistance < threshold && (getUses({ imageData }) < 500)) {
+          if (
+            totalComponentDistance < threshold &&
+            getUses({ imageData }) < 500
+          ) {
             usesCount.set(imageData, (usesCount.get(imageData) || 0) + 1);
             return imageData;
           }
