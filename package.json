@@ -4,6 +4,6 @@
     "start": "npm run proxy & open -a \"Google Chrome\" index.html"
   },
   "dependencies": {
-    "lcp": "^1.1.0"
+    "local-cors-proxy": "^1.1.0"
   }
 }
